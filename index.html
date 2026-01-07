@@ -8,12 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
-            --bg-body: #fff9fb;
+            --bg-body: #fff0f6;
             --sidebar-bg: #ffffff;
             --primary-pink: #ff85b3;
             --soft-pink: #ffe3ed;
+            --accent-blue: #e3f2fd;
             --text-color: #5a4b4f;
             --border-color: #fce4ec;
+            --glass-bg: rgba(255, 255, 255, 0.8);
         }
 
         .dark {
@@ -21,8 +23,10 @@
             --sidebar-bg: #251d1f;
             --primary-pink: #ff85b3;
             --soft-pink: #3d2b2f;
+            --accent-blue: #1e293b;
             --text-color: #fce4ec;
             --border-color: #3d2b2f;
+            --glass-bg: rgba(37, 29, 31, 0.8);
         }
 
         body {
@@ -30,19 +34,22 @@
             color: var(--text-color);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Quicksand', sans-serif;
-            background-image: radial-gradient(var(--soft-pink) 1px, transparent 1px);
-            background-size: 20px 20px;
+            /* Kawaii Pattern */
+            background-image: 
+                radial-gradient(var(--soft-pink) 2px, transparent 2px),
+                linear-gradient(135deg, var(--bg-body) 0%, var(--soft-pink) 100%);
+            background-size: 30px 30px, 100% 100%;
         }
 
         .kawaii-sidebar {
             background-color: var(--sidebar-bg);
             border-right: 2px solid var(--border-color);
-            box-shadow: 4px 0 15px rgba(255, 133, 179, 0.05);
+            box-shadow: 4px 0 15px rgba(255, 133, 179, 0.1);
         }
 
         /* Message Bubbles */
         .chat-bubble-user {
-            background-color: var(--primary-pink);
+            background: linear-gradient(135deg, #ff85b3, #ffb3d1);
             color: white;
             border-radius: 20px 20px 4px 20px;
             box-shadow: 0 4px 12px rgba(255, 133, 179, 0.2);
@@ -53,57 +60,71 @@
             color: var(--text-color);
             border: 2px solid var(--soft-pink);
             border-radius: 20px 20px 20px 4px;
+            box-shadow: 4px 4px 0px var(--soft-pink);
         }
 
         /* Markdown Styles */
         .prose pre {
             background-color: #2d2d2d;
             color: #f8f8f2;
-            padding: 1rem;
-            border-radius: 12px;
-            margin: 0.5rem 0;
+            padding: 1.25rem;
+            border-radius: 16px;
+            margin: 0.8rem 0;
             position: relative;
             overflow-x: auto;
+            border: 2px solid var(--primary-pink);
         }
         .prose code {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Consolas', monospace;
             font-size: 0.9em;
         }
         .copy-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 8px;
+            right: 8px;
             background: var(--primary-pink);
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 2px 8px;
-            font-size: 10px;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
             cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
-        .copy-btn:hover { opacity: 1; }
+        .copy-btn:hover { transform: scale(1.05); }
+
+        /* Decorated Content Area */
+        .main-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 30px;
+            margin: 10px;
+            border: 1px solid var(--border-color);
+        }
 
         /* Session Styling */
         .session-item {
             transition: all 0.3s ease;
-            border-radius: 15px;
+            border-radius: 18px;
             cursor: pointer;
-            margin-bottom: 6px;
-            padding: 12px;
+            margin-bottom: 8px;
+            padding: 14px;
             display: flex;
             align-items: center;
             border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.5);
         }
+
+        .dark .session-item { background: rgba(0, 0, 0, 0.2); }
 
         .session-item:hover {
             background-color: var(--soft-pink);
-            transform: translateX(5px);
+            transform: translateX(8px);
         }
 
         .session-active {
-            background-color: var(--soft-pink);
+            background-color: var(--soft-pink) !important;
             border-color: var(--primary-pink);
             font-weight: 700;
         }
@@ -113,20 +134,36 @@
             color: var(--text-color);
             border: 2px solid var(--soft-pink);
             transition: all 0.3s;
-            border-radius: 18px;
+            border-radius: 20px;
         }
 
         .input-field:focus {
             border-color: var(--primary-pink);
             outline: none;
-            box-shadow: 0 0 15px rgba(255, 133, 179, 0.2);
+            box-shadow: 0 0 20px rgba(255, 133, 179, 0.15);
         }
 
         .btn-kawaii {
             background: linear-gradient(135deg, #ff85b3, #ffb3d1);
             color: white;
-            border-radius: 18px;
+            border-radius: 20px;
             transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 133, 179, 0.3);
+        }
+
+        .btn-kawaii:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 133, 179, 0.4);
+        }
+
+        /* Blue Accent Decoration */
+        .blue-blob {
+            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            opacity: 0.6;
+            filter: blur(40px);
+            position: absolute;
+            z-index: -1;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -144,48 +181,53 @@
 
         .auth-hidden { display: none !important; }
         .glass-header {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
             z-index: 10;
+            border-bottom: 2px solid var(--soft-pink);
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body class="h-screen overflow-hidden flex flex-col md:flex-row">
 
-    <div id="mobile-nav" class="auth-hidden md:hidden glass-header w-full p-4 flex justify-between items-center border-b border-pink-100">
+    <!-- Background Decorations -->
+    <div class="blue-blob w-64 h-64 top-10 left-10"></div>
+    <div class="blue-blob w-96 h-96 bottom-10 right-10" style="background: linear-gradient(45deg, #fce4ec, #f8bbd0);"></div>
+
+    <div id="mobile-nav" class="auth-hidden md:hidden glass-header w-full p-4 flex justify-between items-center">
         <button onclick="toggleSidebar()" class="text-pink-500 text-2xl">☰</button>
         <span class="font-bold text-pink-500">Shiroko 🌸</span>
         <div class="w-8"></div>
     </div>
 
-    <button onclick="toggleTheme()" class="fixed bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 border-2 border-pink-200 text-pink-500 z-50 shadow-lg transition-all">
+    <button onclick="toggleTheme()" class="fixed bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 border-4 border-pink-200 text-pink-500 z-50 shadow-2xl transition-all hover:scale-110">
         <span id="theme-icon">🌙</span>
     </button>
 
-    <aside id="sidebar" class="auth-hidden sidebar-closed md:relative md:translate-x-0 flex flex-col w-72 kawaii-sidebar h-full transition-transform duration-300 ease-in-out">
+    <aside id="sidebar" class="auth-hidden sidebar-closed md:relative md:translate-x-0 flex flex-col w-80 kawaii-sidebar h-full transition-transform duration-300 ease-in-out">
         <div class="p-8 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-pink-500 flex items-center gap-2">
-                <span class="animate-pulse">🦊</span> Shiroko
+                <span class="animate-bounce">🦊</span> Shiroko
             </h1>
             <button onclick="toggleSidebar()" class="md:hidden text-pink-300 text-xl">✕</button>
         </div>
         
-        <div class="px-6 pb-4">
-            <button onclick="startNewSession()" class="w-full py-3 btn-kawaii font-bold flex items-center justify-center gap-2 shadow-lg">
-                <span>✨</span> Chat Baru
+        <div class="px-6 pb-6">
+            <button onclick="startNewSession()" class="w-full py-4 btn-kawaii font-bold flex items-center justify-center gap-2">
+                <span>✨</span> Chat Baru Senpai
             </button>
         </div>
 
-        <div id="session-list" class="flex-1 overflow-y-auto px-4 no-scrollbar space-y-1"></div>
+        <div id="session-list" class="flex-1 overflow-y-auto px-4 no-scrollbar space-y-2"></div>
 
         <div class="p-6 mt-auto">
-            <div class="bg-pink-50 dark:bg-zinc-800/50 p-4 rounded-2xl flex flex-col gap-2 border border-pink-100">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+            <div class="bg-white/50 dark:bg-zinc-800/50 p-5 rounded-[25px] flex flex-col gap-3 border-2 border-pink-100 backdrop-blur-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-pink-200 rounded-full flex items-center justify-center">👤</div>
                     <span id="display-user" class="text-sm font-bold truncate"></span>
                 </div>
-                <button onclick="handleLogout()" class="text-xs text-pink-400 hover:text-pink-600 text-left font-bold">Logout Senpai 👋</button>
+                <button onclick="handleLogout()" class="text-xs py-2 px-4 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-500 hover:bg-pink-200 transition-colors font-bold">Logout 👋</button>
             </div>
         </div>
     </aside>
@@ -193,57 +235,63 @@
     <main id="main-content" class="flex-1 flex flex-col h-full w-full relative">
         <!-- Auth View -->
         <div id="auth-container" class="flex-1 flex items-center justify-center p-6">
-            <div class="w-full max-w-sm bg-white dark:bg-zinc-900 p-10 rounded-[40px] shadow-2xl border-4 border-pink-100 space-y-8">
+            <div class="w-full max-w-sm bg-white dark:bg-zinc-900 p-10 rounded-[45px] shadow-2xl border-4 border-pink-200 space-y-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20 text-4xl">🌸</div>
                 <div class="text-center">
-                    <div class="text-5xl mb-4">🦊</div>
+                    <div class="text-6xl mb-4 drop-shadow-lg">🦊</div>
                     <h2 id="auth-title" class="text-3xl font-bold text-pink-500">Shiroko AI</h2>
-                    <p class="text-pink-300 text-sm font-medium">Hewwo! Silakan masuk Senpai~</p>
+                    <p class="text-pink-300 text-sm font-medium mt-2">Selamat datang di rumah, Senpai~</p>
                 </div>
                 <div id="auth-msg" class="hidden text-center text-xs font-bold p-3 rounded-2xl"></div>
                 
                 <div id="login-form" class="space-y-4">
                     <input type="text" id="username" placeholder="Username" class="w-full p-4 input-field text-center">
                     <input type="password" id="password" placeholder="Password" class="w-full p-4 input-field text-center">
-                    <button onclick="handleLogin()" class="w-full py-4 btn-kawaii font-bold text-lg">Masuk Yuk! 🌸</button>
-                    <p class="text-center text-xs font-medium">Belum ada akun? <a href="javascript:void(0)" onclick="toggleAuth(false)" class="text-pink-500">Daftar Akun</a></p>
+                    <button onclick="handleLogin()" class="w-full py-4 btn-kawaii font-bold text-lg">Masuk 🌸</button>
+                    <p class="text-center text-xs font-medium">Belum kenal? <a href="javascript:void(0)" onclick="toggleAuth(false)" class="text-pink-500 underline decoration-dotted">Daftar Akun Baru</a></p>
                 </div>
 
                 <div id="register-form" class="space-y-4 hidden">
-                    <input type="text" id="reg-username" placeholder="Username Baru" class="w-full p-4 input-field text-center">
-                    <input type="password" id="reg-password" placeholder="Password Baru" class="w-full p-4 input-field text-center">
-                    <button onclick="handleRegister()" class="w-full py-4 btn-kawaii font-bold text-lg">Buat Akun 🦊</button>
-                    <p class="text-center text-xs font-medium">Sudah ada akun? <a href="javascript:void(0)" onclick="toggleAuth(true)" class="text-pink-500">Login Aja</a></p>
+                    <input type="text" id="reg-username" placeholder="Pilih Username" class="w-full p-4 input-field text-center">
+                    <input type="password" id="reg-password" placeholder="Pilih Password" class="w-full p-4 input-field text-center">
+                    <button onclick="handleRegister()" class="w-full py-4 btn-kawaii font-bold text-lg">Jadi Senpai Shiroko 🦊</button>
+                    <p class="text-center text-xs font-medium">Sudah kenal? <a href="javascript:void(0)" onclick="toggleAuth(true)" class="text-pink-500 underline decoration-dotted">Login Saja</a></p>
                 </div>
             </div>
         </div>
 
         <!-- Chat View -->
-        <div id="chat-view" class="flex-1 flex flex-col hidden overflow-hidden">
-            <header class="p-6 flex items-center justify-between glass-header border-b border-pink-50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-xl">🦊</div>
+        <div id="chat-view" class="flex-1 flex flex-col hidden overflow-hidden main-glass">
+            <header class="p-6 flex items-center justify-between glass-header rounded-t-[30px]">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🦊</div>
                     <div>
-                        <h3 id="chat-header-title" class="font-bold text-pink-600 text-sm">Utama</h3>
-                        <p class="text-[10px] text-green-400 font-bold uppercase">Online & Ready ✨</p>
+                        <h3 id="chat-header-title" class="font-bold text-pink-600">Utama</h3>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            <p class="text-[10px] text-green-500 font-bold uppercase tracking-wider">Online & Kawaii ✨</p>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 no-scrollbar w-full max-w-5xl mx-auto"></div>
+            <div id="chat-box" class="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 no-scrollbar w-full max-w-5xl mx-auto"></div>
 
             <div id="image-preview-container" class="px-10 py-4 hidden">
-                <div class="relative inline-block">
-                    <img id="image-preview" src="" class="h-24 w-24 object-cover rounded-2xl border-4 border-white shadow-xl">
-                    <button onclick="clearImage()" class="absolute -top-3 -right-3 bg-pink-500 text-white rounded-full w-7 h-7 flex items-center justify-center">×</button>
+                <div class="relative inline-block group">
+                    <img id="image-preview" src="" class="h-28 w-28 object-cover rounded-[20px] border-4 border-white shadow-2xl transition-transform group-hover:scale-105">
+                    <button onclick="clearImage()" class="absolute -top-3 -right-3 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-pink-600 transition-colors">✕</button>
                 </div>
             </div>
 
             <div class="p-6 md:p-10">
-                <div class="max-w-4xl mx-auto flex gap-4 items-end bg-white dark:bg-zinc-800 p-3 rounded-[30px] shadow-xl border-2 border-pink-50">
+                <div class="max-w-4xl mx-auto flex gap-4 items-end bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md p-4 rounded-[35px] shadow-2xl border-2 border-pink-100">
                     <input type="file" id="file-input" class="hidden" accept="image/*" onchange="previewImage(this)">
-                    <button onclick="document.getElementById('file-input').click()" class="p-4 text-2xl">🖼️</button>
-                    <textarea id="user-input" rows="1" placeholder="Pesan buat Shiroko..." class="flex-1 p-4 bg-transparent focus:outline-none resize-none max-h-40 text-sm" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                    <button id="send-btn" onclick="sendMessage()" class="bg-pink-500 text-white p-4 rounded-2xl font-bold transition shadow-md">KIRIM</button>
+                    <button onclick="document.getElementById('file-input').click()" class="p-3 text-3xl hover:scale-110 transition-transform">🖼️</button>
+                    <textarea id="user-input" rows="1" placeholder="Mau ngobrol apa hari ini, Senpai?..." class="flex-1 p-3 bg-transparent focus:outline-none resize-none max-h-40 text-sm font-medium" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    <button id="send-btn" onclick="sendMessage()" class="bg-pink-500 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg hover:bg-pink-600 transition-all hover:rotate-12">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -259,8 +307,15 @@
 
         function generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => (Math.random()*16|0).toString(16)); }
 
-        // Core Fix: Proper window.onload for persistence
+        // Core Fix: Proper dark mode persistence
         window.addEventListener('load', () => {
+            // Apply saved theme
+            const savedTheme = localStorage.getItem('shiro_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                document.getElementById('theme-icon').innerText = '☀️';
+            }
+
             const loggedInUser = localStorage.getItem('shiro_active_user');
             if (loggedInUser) {
                 currentUser = loggedInUser;
@@ -276,12 +331,15 @@
 
         function toggleTheme() {
             document.body.classList.toggle('dark');
-            document.getElementById('theme-icon').innerText = document.body.classList.contains('dark') ? '☀️' : '🌙';
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('shiro_theme', isDark ? 'dark' : 'light');
         }
 
         function toggleAuth(isLogin) {
             document.getElementById('login-form').classList.toggle('hidden', !isLogin);
             document.getElementById('register-form').classList.toggle('hidden', isLogin);
+            document.getElementById('auth-title').innerText = isLogin ? "Shiroko AI" : "Daftar Shiroko";
         }
 
         function showAuthMsg(text, isError = true) {
@@ -315,7 +373,7 @@
             document.getElementById('sidebar').classList.remove('auth-hidden');
             document.getElementById('mobile-nav')?.classList.remove('auth-hidden');
             document.getElementById('chat-view').classList.remove('hidden');
-            document.getElementById('display-user').innerText = `🌸 ${currentUser}`;
+            document.getElementById('display-user').innerText = `${currentUser}`;
             
             const saved = localStorage.getItem(`shiro_sessions_${currentUser}`);
             if(saved) {
@@ -328,7 +386,7 @@
 
         function startNewSession() {
             const newId = generateUUID();
-            sessions.unshift({ id: newId, title: "Chat Baru ✨", messages: [] });
+            sessions.unshift({ id: newId, title: "Pesan Baru ✨", messages: [] });
             activeSessionId = newId;
             saveData();
             renderSessions();
@@ -341,7 +399,7 @@
             sessions.forEach(s => {
                 const div = document.createElement('div');
                 div.className = `session-item ${s.id === activeSessionId ? 'session-active' : ''}`;
-                div.innerHTML = `<span class="truncate text-sm flex-1">${s.title}</span><button onclick="deleteSession(event, '${s.id}')" class="px-2">✕</button>`;
+                div.innerHTML = `<span class="truncate text-sm flex-1 font-medium">${s.title}</span><button onclick="deleteSession(event, '${s.id}')" class="opacity-40 hover:opacity-100 px-2">✕</button>`;
                 div.onclick = () => selectSession(s.id);
                 list.appendChild(div);
             });
@@ -367,7 +425,6 @@
 
         function saveData() { localStorage.setItem(`shiro_sessions_${currentUser}`, JSON.stringify(sessions)); }
 
-        // Copy Code Function
         function copyCode(btn) {
             const code = btn.parentElement.querySelector('code').innerText;
             const textarea = document.createElement('textarea');
@@ -376,27 +433,25 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            btn.innerText = "Copied! ✨";
+            btn.innerText = "Tersalin! ✨";
             setTimeout(() => btn.innerText = "Copy", 2000);
         }
 
         function renderMessage(sender, text, image = null) {
             const box = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`;
+            msgDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-4 duration-300`;
             
             const content = document.createElement('div');
-            content.className = `p-5 text-sm max-w-[85%] prose ${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`;
+            content.className = `p-6 text-sm max-w-[85%] prose ${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`;
             
-            if(image) content.innerHTML += `<img src="${image}" class="max-w-xs rounded-2xl mb-3 border-2 border-white shadow-md">`;
+            if(image) content.innerHTML += `<img src="${image}" class="max-w-xs rounded-2xl mb-4 border-2 border-white/50 shadow-xl">`;
             
             if(text) {
-                // Parse markdown
                 const htmlContent = marked.parse(text);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = htmlContent;
                 
-                // Add copy buttons to code blocks
                 tempDiv.querySelectorAll('pre').forEach(pre => {
                     const btn = document.createElement('button');
                     btn.className = "copy-btn";
@@ -420,7 +475,7 @@
 
             const session = sessions.find(s => s.id === activeSessionId);
             if(session.messages.length === 0 && text) {
-                session.title = text.length > 20 ? text.substring(0, 20) + "..." : text;
+                session.title = text.length > 25 ? text.substring(0, 25) + "..." : text;
                 renderSessions();
             }
 
@@ -433,8 +488,8 @@
 
             const typing = document.createElement('div');
             typing.id = "typing";
-            typing.className = "p-4 chat-bubble-ai w-fit italic text-xs";
-            typing.innerHTML = `Shiroko sedang mengetik... <span class="typing-dot">🌸</span>`;
+            typing.className = "p-5 chat-bubble-ai w-fit italic text-xs animate-pulse";
+            typing.innerHTML = `Shiroko sedang memikirkan jawaban buat Senpai... <span class="typing-dot inline-block">🌸</span>`;
             document.getElementById('chat-box').appendChild(typing);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
 
@@ -449,10 +504,10 @@
                 if(data.success) {
                     session.messages.push({sender: 'bot', text: data.result});
                     renderMessage('bot', data.result);
-                } else renderMessage('bot', "Ehh, Shiroko lagi error Senpai! (╥﹏╥)");
+                } else renderMessage('bot', "Aduuh, Shiroko lagi pusing Senpai! Coba lagi nanti ya? (╥﹏╥)");
             } catch (e) {
                 document.getElementById('typing')?.remove();
-                renderMessage('bot', "Sinyal Shiroko ilang! 📡");
+                renderMessage('bot', "Sinyalnya lagi nakal nih Senpai! 📡");
             }
             saveData();
         }

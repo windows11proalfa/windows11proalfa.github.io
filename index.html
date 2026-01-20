@@ -1,537 +1,382 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shiroko AI - Kawaii & Intelligent</title>
+    <title>Shiroko Worker Deployer >w<</title>
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/40/c0/4c/40c04cc4c807856b667bca78aa094714.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Prism.js for Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    
     <style>
         :root {
-            --bg-body: #fff0f6;
-            --sidebar-bg: #ffffff;
-            --primary-pink: #ff85b3;
-            --soft-pink: #ffe3ed;
-            --accent-blue: #e3f2fd;
-            --text-color: #5a4b4f;
-            --border-color: #fce4ec;
-            --glass-bg: rgba(255, 255, 255, 0.8);
+            --bg-main: #fff5f8;
+            --bg-sidebar: #ffffff;
+            --text-main: #4a5568;
+            --border-color: #ffb6c1;
+            --accent: #ff85a2;
+            --editor-bg: #1e1e1e;
         }
 
         .dark {
-            --bg-body: #1a1617;
-            --sidebar-bg: #251d1f;
-            --primary-pink: #ff85b3;
-            --soft-pink: #3d2b2f;
-            --accent-blue: #1e293b;
-            --text-color: #fce4ec;
-            --border-color: #3d2b2f;
-            --glass-bg: rgba(37, 29, 31, 0.8);
+            --bg-main: #121212;
+            --bg-sidebar: #1e1e1e;
+            --text-main: #e2e8f0;
+            --border-color: #333333;
+            --accent: #ff85a2;
+            --editor-bg: #0d0d0d;
         }
 
         body {
-            background-color: var(--bg-body);
-            color: var(--text-color);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Quicksand', sans-serif;
-            /* Kawaii Pattern */
-            background-image: 
-                radial-gradient(var(--soft-pink) 2px, transparent 2px),
-                linear-gradient(135deg, var(--bg-body) 0%, var(--soft-pink) 100%);
-            background-size: 30px 30px, 100% 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s;
         }
 
-        .kawaii-sidebar {
-            background-color: var(--sidebar-bg);
+        .sidebar {
+            background: var(--bg-sidebar);
             border-right: 2px solid var(--border-color);
-            box-shadow: 4px 0 15px rgba(255, 133, 179, 0.1);
+            width: 300px;
+            transition: transform 0.3s ease, width 0.3s ease;
+            z-index: 50;
         }
 
-        /* Message Bubbles */
-        .chat-bubble-user {
-            background: linear-gradient(135deg, #ff85b3, #ffb3d1);
-            color: white;
-            border-radius: 20px 20px 4px 20px;
-            box-shadow: 0 4px 12px rgba(255, 133, 179, 0.2);
-        }
-
-        .chat-bubble-ai {
-            background-color: var(--sidebar-bg);
-            color: var(--text-color);
-            border: 2px solid var(--soft-pink);
-            border-radius: 20px 20px 20px 4px;
-            box-shadow: 4px 4px 0px var(--soft-pink);
-        }
-
-        /* Markdown Styles */
-        .prose pre {
-            background-color: #2d2d2d;
-            color: #f8f8f2;
-            padding: 1.25rem;
-            border-radius: 16px;
-            margin: 0.8rem 0;
-            position: relative;
-            overflow-x: auto;
-            border: 2px solid var(--primary-pink);
-        }
-        .prose code {
-            font-family: 'Consolas', monospace;
-            font-size: 0.9em;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: var(--primary-pink);
-            color: white;
+        .sidebar.closed {
+            transform: translateX(-100%);
+            width: 0;
+            padding: 0;
+            overflow: hidden;
             border: none;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
         }
-        .copy-btn:hover { transform: scale(1.05); }
 
-        /* Decorated Content Area */
-        .main-glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(8px);
-            border-radius: 30px;
-            margin: 10px;
+        .kawaii-input, .kawaii-select {
+            background: var(--bg-main);
+            color: var(--text-main);
             border: 1px solid var(--border-color);
-        }
-
-        /* Session Styling */
-        .session-item {
-            transition: all 0.3s ease;
-            border-radius: 18px;
-            cursor: pointer;
-            margin-bottom: 8px;
-            padding: 14px;
-            display: flex;
-            align-items: center;
-            border: 2px solid transparent;
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .dark .session-item { background: rgba(0, 0, 0, 0.2); }
-
-        .session-item:hover {
-            background-color: var(--soft-pink);
-            transform: translateX(8px);
-        }
-
-        .session-active {
-            background-color: var(--soft-pink) !important;
-            border-color: var(--primary-pink);
-            font-weight: 700;
-        }
-
-        .input-field {
-            background-color: var(--sidebar-bg);
-            color: var(--text-color);
-            border: 2px solid var(--soft-pink);
-            transition: all 0.3s;
-            border-radius: 20px;
-        }
-
-        .input-field:focus {
-            border-color: var(--primary-pink);
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            font-size: 0.875rem;
             outline: none;
-            box-shadow: 0 0 20px rgba(255, 133, 179, 0.15);
         }
 
-        .btn-kawaii {
-            background: linear-gradient(135deg, #ff85b3, #ffb3d1);
+        .kawaii-btn {
+            background: var(--accent);
             color: white;
-            border-radius: 20px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 133, 179, 0.3);
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(255, 133, 162, 0.3);
         }
 
-        .btn-kawaii:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 133, 179, 0.4);
+        #editor-container {
+            display: flex;
+            background: var(--editor-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+            flex-grow: 1;
         }
 
-        /* Blue Accent Decoration */
-        .blue-blob {
-            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            opacity: 0.6;
-            filter: blur(40px);
-            position: absolute;
-            z-index: -1;
+        #line-numbers {
+            width: 45px;
+            padding: 20px 8px;
+            text-align: right;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            background: rgba(0,0,0,0.2);
+            user-select: none;
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+        #code-editor {
+            flex-grow: 1;
+            padding: 20px;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            outline: none;
+            white-space: pre;
+            overflow: auto;
+            tab-size: 4;
+            caret-color: var(--accent);
         }
-        .typing-dot { animation: bounce 0.6s infinite alternate; }
 
-        @media (max-width: 768px) {
-            .sidebar-closed { transform: translateX(-100%); position: absolute; z-index: 50; }
-            .sidebar-open { transform: translateX(0); position: absolute; z-index: 50; }
-        }
+        pre[class*="language-"] { margin: 0 !important; padding: 0 !important; background: transparent !important; }
+        code[class*="language-"] { font-family: inherit !important; }
 
-        .auth-hidden { display: none !important; }
-        .glass-header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            z-index: 10;
-            border-bottom: 2px solid var(--soft-pink);
-        }
+        @media (max-width: 768px) { .sidebar { position: absolute; height: 100%; } }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 </head>
-<body class="h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="flex">
 
-    <!-- Background Decorations -->
-    <div class="blue-blob w-64 h-64 top-10 left-10"></div>
-    <div class="blue-blob w-96 h-96 bottom-10 right-10" style="background: linear-gradient(45deg, #fce4ec, #f8bbd0);"></div>
-
-    <div id="mobile-nav" class="auth-hidden md:hidden glass-header w-full p-4 flex justify-between items-center">
-        <button onclick="toggleSidebar()" class="text-pink-500 text-2xl">☰</button>
-        <span class="font-bold text-pink-500">Shiroko 🌸</span>
-        <div class="w-8"></div>
-    </div>
-
-    <button onclick="toggleTheme()" class="fixed bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 border-4 border-pink-200 text-pink-500 z-50 shadow-2xl transition-all hover:scale-110">
-        <span id="theme-icon">🌙</span>
-    </button>
-
-    <aside id="sidebar" class="auth-hidden sidebar-closed md:relative md:translate-x-0 flex flex-col w-80 kawaii-sidebar h-full transition-transform duration-300 ease-in-out">
-        <div class="p-8 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-pink-500 flex items-center gap-2">
-                <span class="animate-bounce">🦊</span> Shiroko
-            </h1>
-            <button onclick="toggleSidebar()" class="md:hidden text-pink-300 text-xl">✕</button>
-        </div>
-        
-        <div class="px-6 pb-6">
-            <button onclick="startNewSession()" class="w-full py-4 btn-kawaii font-bold flex items-center justify-center gap-2">
-                <span>✨</span> Chat Baru Senpai
-            </button>
-        </div>
-
-        <div id="session-list" class="flex-1 overflow-y-auto px-4 no-scrollbar space-y-2"></div>
-
-        <div class="p-6 mt-auto">
-            <div class="bg-white/50 dark:bg-zinc-800/50 p-5 rounded-[25px] flex flex-col gap-3 border-2 border-pink-100 backdrop-blur-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-pink-200 rounded-full flex items-center justify-center">👤</div>
-                    <span id="display-user" class="text-sm font-bold truncate"></span>
-                </div>
-                <button onclick="handleLogout()" class="text-xs py-2 px-4 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-pink-500 hover:bg-pink-200 transition-colors font-bold">Logout 👋</button>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar flex flex-col p-6 h-full">
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-[#ff85a2]">Shiroko Deployer</h1>
+                <p class="text-[10px] opacity-50">v2.1 (CORS Fix)</p>
             </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-pink-400"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="flex-1 space-y-5 overflow-y-auto pr-2">
+            <section>
+                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">Autentikasi</h2>
+                <div class="space-y-3">
+                    <input type="email" id="email" class="kawaii-input" placeholder="Email Cloudflare">
+                    <input type="password" id="apiKey" class="kawaii-input" placeholder="Global API Key">
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">Target Worker</h2>
+                <div class="space-y-3">
+                    <input type="text" id="accountId" class="kawaii-input" placeholder="Account ID">
+                    <input type="text" id="workerName" class="kawaii-input" placeholder="Worker Name">
+                </div>
+            </section>
+
+            <section>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xs font-bold opacity-50 uppercase text-pink-400">Koleksi Script</h2>
+                    <button onclick="loadTemplateList()" class="text-pink-400"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                </div>
+                <select id="templateSelect" class="kawaii-select" onchange="loadTemplate()">
+                    <option value="">-- Pilih Template --</option>
+                </select>
+            </section>
+
+            <section>
+                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">CORS Proxy</h2>
+                <input type="text" id="proxyUrl" class="kawaii-input" value="https://cors-anywhere.herokuapp.com/" placeholder="CORS Proxy URL">
+                <p class="text-[9px] mt-1 opacity-60">Gunakan proxy jika terjadi error CORS saat deploy.</p>
+            </section>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-pink-100 dark:border-gray-700">
+            <button onclick="deployWorker()" id="btnText" class="kawaii-btn w-full flex items-center justify-center gap-2">
+                <i data-lucide="rocket" class="w-5 h-5"></i> DEPLOY NOW!
+            </button>
+            <div id="statusBox" class="hidden mt-3 p-3 rounded-lg text-[10px] font-mono whitespace-pre-wrap"></div>
         </div>
     </aside>
 
-    <main id="main-content" class="flex-1 flex flex-col h-full w-full relative">
-        <!-- Auth View -->
-        <div id="auth-container" class="flex-1 flex items-center justify-center p-6">
-            <div class="w-full max-w-sm bg-white dark:bg-zinc-900 p-10 rounded-[45px] shadow-2xl border-4 border-pink-200 space-y-8 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-20 text-4xl">🌸</div>
-                <div class="text-center">
-                    <div class="text-6xl mb-4 drop-shadow-lg">🦊</div>
-                    <h2 id="auth-title" class="text-3xl font-bold text-pink-500">Shiroko AI</h2>
-                    <p class="text-pink-300 text-sm font-medium mt-2">Selamat datang di rumah, Senpai~</p>
-                </div>
-                <div id="auth-msg" class="hidden text-center text-xs font-bold p-3 rounded-2xl"></div>
-                
-                <div id="login-form" class="space-y-4">
-                    <input type="text" id="username" placeholder="Username" class="w-full p-4 input-field text-center">
-                    <input type="password" id="password" placeholder="Password" class="w-full p-4 input-field text-center">
-                    <button onclick="handleLogin()" class="w-full py-4 btn-kawaii font-bold text-lg">Masuk 🌸</button>
-                    <p class="text-center text-xs font-medium">Belum kenal? <a href="javascript:void(0)" onclick="toggleAuth(false)" class="text-pink-500 underline decoration-dotted">Daftar Akun Baru</a></p>
-                </div>
-
-                <div id="register-form" class="space-y-4 hidden">
-                    <input type="text" id="reg-username" placeholder="Pilih Username" class="w-full p-4 input-field text-center">
-                    <input type="password" id="reg-password" placeholder="Pilih Password" class="w-full p-4 input-field text-center">
-                    <button onclick="handleRegister()" class="w-full py-4 btn-kawaii font-bold text-lg">Jadi Senpai Shiroko 🦊</button>
-                    <p class="text-center text-xs font-medium">Sudah kenal? <a href="javascript:void(0)" onclick="toggleAuth(true)" class="text-pink-500 underline decoration-dotted">Login Saja</a></p>
-                </div>
+    <main class="flex-1 flex flex-col relative min-w-0 h-full overflow-hidden">
+        <header class="flex items-center justify-between p-4 bg-white/50 dark:bg-black/20 backdrop-blur-sm border-b border-pink-100 dark:border-gray-800">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 rounded-full hover:bg-pink-100 text-pink-400"><i data-lucide="menu"></i></button>
+                <h3 class="font-bold text-sm">Worker Editor (CORS Fix)</h3>
             </div>
-        </div>
+            <button onclick="toggleDarkMode()" class="flex items-center gap-2 px-4 py-2 rounded-full border border-pink-200 dark:border-gray-700">
+                <i data-lucide="moon" id="themeIcon" class="w-4 h-4 text-pink-400"></i>
+                <span id="themeText" class="text-xs font-medium text-pink-400">Mode Gelap</span>
+            </button>
+        </header>
 
-        <!-- Chat View -->
-        <div id="chat-view" class="flex-1 flex flex-col hidden overflow-hidden main-glass">
-            <header class="p-6 flex items-center justify-between glass-header rounded-t-[30px]">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🦊</div>
-                    <div>
-                        <h3 id="chat-header-title" class="font-bold text-pink-600">Utama</h3>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            <p class="text-[10px] text-green-500 font-bold uppercase tracking-wider">Online & Kawaii ✨</p>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div id="chat-box" class="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 no-scrollbar w-full max-w-5xl mx-auto"></div>
-
-            <div id="image-preview-container" class="px-10 py-4 hidden">
-                <div class="relative inline-block group">
-                    <img id="image-preview" src="" class="h-28 w-28 object-cover rounded-[20px] border-4 border-white shadow-2xl transition-transform group-hover:scale-105">
-                    <button onclick="clearImage()" class="absolute -top-3 -right-3 bg-pink-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-pink-600 transition-colors">✕</button>
-                </div>
-            </div>
-
-            <div class="p-6 md:p-10">
-                <div class="max-w-4xl mx-auto flex gap-4 items-end bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md p-4 rounded-[35px] shadow-2xl border-2 border-pink-100">
-                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="previewImage(this)">
-                    <button onclick="document.getElementById('file-input').click()" class="p-3 text-3xl hover:scale-110 transition-transform">🖼️</button>
-                    <textarea id="user-input" rows="1" placeholder="Mau ngobrol apa hari ini, Senpai?..." class="flex-1 p-3 bg-transparent focus:outline-none resize-none max-h-40 text-sm font-medium" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                    <button id="send-btn" onclick="sendMessage()" class="bg-pink-500 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg hover:bg-pink-600 transition-all hover:rotate-12">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
-                    </button>
-                </div>
+        <div class="p-4 md:p-6 flex-1 flex flex-col min-h-0">
+            <div id="editor-container">
+                <div id="line-numbers">1</div>
+                <pre id="code-editor" contenteditable="true" spellcheck="false"></pre>
             </div>
         </div>
     </main>
 
     <script>
-        let currentUser = null;
-        let sessions = [];
-        let activeSessionId = null;
-        let selectedImageUrl = "";
+        lucide.createIcons();
+        const editor = document.getElementById('code-editor');
+        const lineNumbers = document.getElementById('line-numbers');
 
-        const SYSTEM_PROMPT = `Shiroko personality: Cute, helpful, intelligent anime girl. Respond in Bahasa Indonesia. Act as a friendly AI named Shiroko. Use Markdown for formatting and code blocks. Developed by AI Empower.`;
-
-        function generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => (Math.random()*16|0).toString(16)); }
-
-        // Core Fix: Proper dark mode persistence
-        window.addEventListener('load', () => {
-            // Apply saved theme
-            const savedTheme = localStorage.getItem('shiro_theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark');
-                document.getElementById('theme-icon').innerText = '☀️';
+        function highlight() {
+            const code = editor.innerText;
+            const selection = window.getSelection();
+            let cursorOffset = 0;
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(editor);
+                preCaretRange.setEnd(range.startContainer, range.startOffset);
+                cursorOffset = preCaretRange.toString().length;
             }
 
-            const loggedInUser = localStorage.getItem('shiro_active_user');
-            if (loggedInUser) {
-                currentUser = loggedInUser;
-                initApp();
+            editor.innerHTML = Prism.highlight(code, Prism.languages.javascript, 'javascript');
+            restoreCursor(editor, cursorOffset);
+            
+            const lines = code.split('\n').length;
+            lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+            saveData();
+        }
+
+        function restoreCursor(container, offset) {
+            let charCount = 0;
+            const range = document.createRange();
+            range.setStart(container, 0);
+            range.collapse(true);
+            const nodeStack = [container];
+            let node, foundStart = false;
+            while (!foundStart && (node = nodeStack.pop())) {
+                if (node.nodeType === 3) {
+                    const nextCharCount = charCount + node.length;
+                    if (offset <= nextCharCount) {
+                        range.setStart(node, offset - charCount);
+                        range.setEnd(node, offset - charCount);
+                        foundStart = true;
+                    }
+                    charCount = nextCharCount;
+                } else {
+                    let i = node.childNodes.length;
+                    while (i--) nodeStack.push(node.childNodes[i]);
+                }
+            }
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+
+        editor.addEventListener('input', highlight);
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                document.execCommand('insertText', false, '    ');
             }
         });
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('sidebar-closed');
-            sidebar.classList.toggle('sidebar-open');
-        }
+        async function deployWorker() {
+            const email = document.getElementById('email').value;
+            const key = document.getElementById('apiKey').value;
+            const acc = document.getElementById('accountId').value;
+            const name = document.getElementById('workerName').value;
+            const proxy = document.getElementById('proxyUrl').value;
+            const btn = document.getElementById('btnText');
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
-            localStorage.setItem('shiro_theme', isDark ? 'dark' : 'light');
-        }
+            if(!email || !key || !acc || !name) return showStatus("Lengkapi data!", "bg-yellow-500/20 text-yellow-500");
 
-        function toggleAuth(isLogin) {
-            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
-            document.getElementById('register-form').classList.toggle('hidden', isLogin);
-            document.getElementById('auth-title').innerText = isLogin ? "Shiroko AI" : "Daftar Shiroko";
-        }
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">🌀</span> DEPLOYING...`;
 
-        function showAuthMsg(text, isError = true) {
-            const msgEl = document.getElementById('auth-msg');
-            msgEl.innerText = text;
-            msgEl.className = `block text-center p-3 rounded-2xl text-xs font-bold ${isError ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`;
-            setTimeout(() => msgEl.classList.add('hidden'), 3000);
-        }
-
-        function handleRegister() {
-            const u = document.getElementById('reg-username').value.trim();
-            const p = document.getElementById('reg-password').value.trim();
-            if(!u || !p) return showAuthMsg("Data belum lengkap!");
-            localStorage.setItem(`shiro_user_${u}`, p);
-            showAuthMsg("Berhasil daftar! ✨", false);
-            toggleAuth(true);
-        }
-
-        function handleLogin() {
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
-            if(localStorage.getItem(`shiro_user_${u}`) === p) {
-                currentUser = u;
-                localStorage.setItem('shiro_active_user', u);
-                initApp();
-            } else showAuthMsg("Salah password/user!");
-        }
-
-        function initApp() {
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('auth-hidden');
-            document.getElementById('mobile-nav')?.classList.remove('auth-hidden');
-            document.getElementById('chat-view').classList.remove('hidden');
-            document.getElementById('display-user').innerText = `${currentUser}`;
+            // Cloudflare API URL
+            const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${acc}/workers/scripts/${name}`;
             
-            const saved = localStorage.getItem(`shiro_sessions_${currentUser}`);
-            if(saved) {
-                sessions = JSON.parse(saved);
-                if(sessions.length > 0) selectSession(sessions[0].id);
-                else startNewSession();
-            } else startNewSession();
-            renderSessions();
-        }
-
-        function startNewSession() {
-            const newId = generateUUID();
-            sessions.unshift({ id: newId, title: "Pesan Baru ✨", messages: [] });
-            activeSessionId = newId;
-            saveData();
-            renderSessions();
-            selectSession(newId);
-        }
-
-        function renderSessions() {
-            const list = document.getElementById('session-list');
-            list.innerHTML = '';
-            sessions.forEach(s => {
-                const div = document.createElement('div');
-                div.className = `session-item ${s.id === activeSessionId ? 'session-active' : ''}`;
-                div.innerHTML = `<span class="truncate text-sm flex-1 font-medium">${s.title}</span><button onclick="deleteSession(event, '${s.id}')" class="opacity-40 hover:opacity-100 px-2">✕</button>`;
-                div.onclick = () => selectSession(s.id);
-                list.appendChild(div);
-            });
-        }
-
-        function deleteSession(e, id) {
-            e.stopPropagation();
-            sessions = sessions.filter(s => s.id !== id);
-            if(sessions.length === 0) startNewSession();
-            else if(activeSessionId === id) selectSession(sessions[0].id);
-            saveData();
-            renderSessions();
-        }
-
-        function selectSession(id) {
-            activeSessionId = id;
-            const session = sessions.find(s => s.id === id);
-            document.getElementById('chat-header-title').innerText = session.title;
-            document.getElementById('chat-box').innerHTML = '';
-            session.messages.forEach(m => renderMessage(m.sender, m.text, m.image));
-            renderSessions();
-        }
-
-        function saveData() { localStorage.setItem(`shiro_sessions_${currentUser}`, JSON.stringify(sessions)); }
-
-        function copyCode(btn) {
-            const code = btn.parentElement.querySelector('code').innerText;
-            const textarea = document.createElement('textarea');
-            textarea.value = code;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            btn.innerText = "Tersalin! ✨";
-            setTimeout(() => btn.innerText = "Copy", 2000);
-        }
-
-        function renderMessage(sender, text, image = null) {
-            const box = document.getElementById('chat-box');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-4 duration-300`;
-            
-            const content = document.createElement('div');
-            content.className = `p-6 text-sm max-w-[85%] prose ${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`;
-            
-            if(image) content.innerHTML += `<img src="${image}" class="max-w-xs rounded-2xl mb-4 border-2 border-white/50 shadow-xl">`;
-            
-            if(text) {
-                const htmlContent = marked.parse(text);
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = htmlContent;
-                
-                tempDiv.querySelectorAll('pre').forEach(pre => {
-                    const btn = document.createElement('button');
-                    btn.className = "copy-btn";
-                    btn.innerText = "Copy";
-                    btn.onclick = () => copyCode(btn);
-                    pre.appendChild(btn);
-                });
-                
-                content.innerHTML += tempDiv.innerHTML;
-            }
-            
-            msgDiv.appendChild(content);
-            box.appendChild(msgDiv);
-            box.scrollTop = box.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if(!text && !selectedImageUrl) return;
-
-            const session = sessions.find(s => s.id === activeSessionId);
-            if(session.messages.length === 0 && text) {
-                session.title = text.length > 25 ? text.substring(0, 25) + "..." : text;
-                renderSessions();
-            }
-
-            const imgData = selectedImageUrl;
-            session.messages.push({sender: 'user', text, image: imgData});
-            renderMessage('user', text, imgData);
-            input.value = '';
-            input.style.height = '';
-            clearImage();
-
-            const typing = document.createElement('div');
-            typing.id = "typing";
-            typing.className = "p-5 chat-bubble-ai w-fit italic text-xs animate-pulse";
-            typing.innerHTML = `Shiroko sedang memikirkan jawaban buat Senpai... <span class="typing-dot inline-block">🌸</span>`;
-            document.getElementById('chat-box').appendChild(typing);
-            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            // Menggunakan Proxy jika URL proxy diisi
+            const finalUrl = proxy ? proxy + apiUrl : apiUrl;
 
             try {
-                const res = await fetch("https://rynekoo-api.hf.space/text.gen/gemini/2.5-pro", {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ text, systemPrompt: SYSTEM_PROMPT, imageUrl: imgData, sessionId: activeSessionId })
+                const res = await fetch(finalUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'X-Auth-Email': email,
+                        'X-Auth-Key': key,
+                        'Content-Type': 'application/javascript',
+                        // Jika menggunakan cors-anywhere, header ini sering diperlukan
+                        'X-Requested-With': 'XMLHttpRequest' 
+                    },
+                    body: editor.innerText
                 });
+
+                if (res.status === 403 && proxy.includes("cors-anywhere")) {
+                    showStatus("Butuh Akses Proxy! Klik tombol 'Request access' di website cors-anywhere.herokuapp.com dulu.", "bg-orange-500/20 text-orange-500");
+                    window.open("https://cors-anywhere.herokuapp.com/corsdemo", "_blank");
+                    return;
+                }
+
                 const data = await res.json();
-                document.getElementById('typing')?.remove();
-                if(data.success) {
-                    session.messages.push({sender: 'bot', text: data.result});
-                    renderMessage('bot', data.result);
-                } else renderMessage('bot', "Aduuh, Shiroko lagi pusing Senpai! Coba lagi nanti ya? (╥﹏╥)");
+                if(data.success) showStatus("Berhasil Deploy!", "bg-green-500/20 text-green-500");
+                else showStatus("Error: " + (data.errors?.[0]?.message || "Gagal"), "bg-red-500/20 text-red-500");
             } catch (e) {
-                document.getElementById('typing')?.remove();
-                renderMessage('bot', "Sinyalnya lagi nakal nih Senpai! 📡");
-            }
-            saveData();
-        }
-
-        function previewImage(input) {
-            if (input.files?.[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    selectedImageUrl = e.target.result;
-                    document.getElementById('image-preview').src = selectedImageUrl;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
+                showStatus("Error: Proxy mungkin bermasalah atau butuh aktivasi.", "bg-red-500/20 text-red-500");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="rocket" class="w-5 h-5"></i> DEPLOY NOW!`;
+                lucide.createIcons();
             }
         }
 
-        function clearImage() {
-            selectedImageUrl = "";
-            document.getElementById('file-input').value = "";
-            document.getElementById('image-preview-container').classList.add('hidden');
+        // --- Standard Functions ---
+        function showStatus(msg, cls) {
+            const b = document.getElementById('statusBox');
+            b.className = "mt-3 p-3 rounded-lg text-[10px] font-mono " + cls;
+            b.innerText = msg;
+            b.classList.remove('hidden');
         }
 
-        function handleLogout() { localStorage.removeItem('shiro_active_user'); location.reload(); }
-        document.getElementById('user-input').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        function saveData() {
+            localStorage.setItem('shiroko_v2_data', JSON.stringify({
+                email: document.getElementById('email').value,
+                apiKey: document.getElementById('apiKey').value,
+                accountId: document.getElementById('accountId').value,
+                workerName: document.getElementById('workerName').value,
+                proxy: document.getElementById('proxyUrl').value,
+                code: editor.innerText
+            }));
+        }
+
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem('shiroko_v2_data') || '{}');
+            if(saved.email) document.getElementById('email').value = saved.email;
+            if(saved.apiKey) document.getElementById('apiKey').value = saved.apiKey;
+            if(saved.accountId) document.getElementById('accountId').value = saved.accountId;
+            if(saved.workerName) document.getElementById('workerName').value = saved.workerName;
+            if(saved.proxy) document.getElementById('proxyUrl').value = saved.proxy;
+            editor.innerText = saved.code || "export default {\n  async fetch(request, env) {\n    return new Response('Halo Senpai! >w<');\n  }\n};";
+            highlight();
+            if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
+            loadTemplateList();
+        };
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        async function loadTemplateList() {
+            try {
+                const res = await fetch('template/list.json');
+                const files = await res.json();
+                const s = document.getElementById('templateSelect');
+                s.innerHTML = '<option value="">-- Pilih Script --</option>';
+                files.forEach(f => {
+                    const o = document.createElement('option');
+                    o.value = `template/${f}`;
+                    o.textContent = f.split('.')[0].toUpperCase();
+                    s.appendChild(o);
+                });
+            } catch(e) {}
+        }
+
+        async function loadTemplate() {
+            const url = document.getElementById('templateSelect').value;
+            if(!url) return;
+            const res = await fetch(url);
+            editor.innerText = await res.text();
+            highlight();
+        }
+
+        function importFile(input) {
+            const f = input.files[0];
+            if(!f) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                editor.innerText = e.target.result;
+                highlight();
+            };
+            r.readAsText(f);
+        }
     </script>
 </body>
 </html>

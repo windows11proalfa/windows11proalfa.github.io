@@ -78,6 +78,7 @@
             box-shadow: 0 4px 14px 0 rgba(255, 133, 162, 0.3);
         }
 
+        /* --- NEW ROBUST EDITOR STYLES --- */
         #editor-container {
             display: flex;
             background: var(--editor-bg);
@@ -115,10 +116,20 @@
             caret-color: var(--accent);
         }
 
-        pre[class*="language-"] { margin: 0 !important; padding: 0 !important; background: transparent !important; }
-        code[class*="language-"] { font-family: inherit !important; }
+        /* Prism override for direct editor */
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }
 
-        @media (max-width: 768px) { .sidebar { position: absolute; height: 100%; } }
+        code[class*="language-"] {
+            font-family: inherit !important;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; height: 100%; }
+        }
     </style>
 </head>
 <body class="flex">
@@ -128,14 +139,16 @@
         <div class="mb-8 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold text-[#ff85a2]">Shiroko Deployer</h1>
-                <p class="text-[10px] opacity-50">v2.1 (CORS Fix)</p>
+                <p class="text-[10px] opacity-50">AI Empowered Editor</p>
             </div>
-            <button onclick="toggleSidebar()" class="md:hidden text-pink-400"><i data-lucide="x"></i></button>
+            <button onclick="toggleSidebar()" class="md:hidden text-pink-400">
+                <i data-lucide="x"></i>
+            </button>
         </div>
 
         <div class="flex-1 space-y-5 overflow-y-auto pr-2">
             <section>
-                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">Autentikasi</h2>
+                <h2 class="text-xs font-bold opacity-50 uppercase mb-3">Autentikasi</h2>
                 <div class="space-y-3">
                     <input type="email" id="email" class="kawaii-input" placeholder="Email Cloudflare">
                     <input type="password" id="apiKey" class="kawaii-input" placeholder="Global API Key">
@@ -143,7 +156,7 @@
             </section>
 
             <section>
-                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">Target Worker</h2>
+                <h2 class="text-xs font-bold opacity-50 uppercase mb-3">Target Worker</h2>
                 <div class="space-y-3">
                     <input type="text" id="accountId" class="kawaii-input" placeholder="Account ID">
                     <input type="text" id="workerName" class="kawaii-input" placeholder="Worker Name">
@@ -152,18 +165,14 @@
 
             <section>
                 <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xs font-bold opacity-50 uppercase text-pink-400">Koleksi Script</h2>
-                    <button onclick="loadTemplateList()" class="text-pink-400"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                    <h2 class="text-xs font-bold opacity-50 uppercase">Koleksi Script</h2>
+                    <button onclick="loadTemplateList()" class="text-pink-400 hover:rotate-180 transition-all">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                    </button>
                 </div>
                 <select id="templateSelect" class="kawaii-select" onchange="loadTemplate()">
                     <option value="">-- Pilih Template --</option>
                 </select>
-            </section>
-
-            <section>
-                <h2 class="text-xs font-bold opacity-50 uppercase mb-3 text-pink-400">CORS Proxy</h2>
-                <input type="text" id="proxyUrl" class="kawaii-input" value="https://cors-anywhere.herokuapp.com/" placeholder="CORS Proxy URL">
-                <p class="text-[9px] mt-1 opacity-60">Gunakan proxy jika terjadi error CORS saat deploy.</p>
             </section>
         </div>
 
@@ -178,8 +187,10 @@
     <main class="flex-1 flex flex-col relative min-w-0 h-full overflow-hidden">
         <header class="flex items-center justify-between p-4 bg-white/50 dark:bg-black/20 backdrop-blur-sm border-b border-pink-100 dark:border-gray-800">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="p-2 rounded-full hover:bg-pink-100 text-pink-400"><i data-lucide="menu"></i></button>
-                <h3 class="font-bold text-sm">Worker Editor (CORS Fix)</h3>
+                <button onclick="toggleSidebar()" class="p-2 rounded-full hover:bg-pink-100 text-pink-400">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h3 class="font-bold text-sm">Shiroko Editor v2</h3>
             </div>
             <button onclick="toggleDarkMode()" class="flex items-center gap-2 px-4 py-2 rounded-full border border-pink-200 dark:border-gray-700">
                 <i data-lucide="moon" id="themeIcon" class="w-4 h-4 text-pink-400"></i>
@@ -188,6 +199,18 @@
         </header>
 
         <div class="p-4 md:p-6 flex-1 flex flex-col min-h-0">
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                    <span id="fileNameDisplay" class="text-xs font-mono opacity-60">worker.js</span>
+                </div>
+                <button onclick="document.getElementById('fileImport').click()" class="text-[10px] font-bold uppercase tracking-wider text-pink-500 hover:underline">
+                    Import File
+                </button>
+                <input type="file" id="fileImport" accept=".js" class="hidden" onchange="importFile(this)">
+            </div>
+            
+            <!-- NEW EDITOR AREA -->
             <div id="editor-container">
                 <div id="line-numbers">1</div>
                 <pre id="code-editor" contenteditable="true" spellcheck="false"></pre>
@@ -197,26 +220,36 @@
 
     <script>
         lucide.createIcons();
+
         const editor = document.getElementById('code-editor');
         const lineNumbers = document.getElementById('line-numbers');
 
+        // Initial Content
+        let initialCode = "export default {\n  async fetch(request, env) {\n    return new Response('Halo Senpai! >w<');\n  }\n};";
+
+        // Logic Highlighting tanpa Textarea
         function highlight() {
             const code = editor.innerText;
+            
+            // Simpan posisi kursor
             const selection = window.getSelection();
-            let cursorOffset = 0;
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const preCaretRange = range.cloneRange();
-                preCaretRange.selectNodeContents(editor);
-                preCaretRange.setEnd(range.startContainer, range.startOffset);
-                cursorOffset = preCaretRange.toString().length;
-            }
+            if (selection.rangeCount === 0) return;
+            const range = selection.getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(editor);
+            preCaretRange.setEnd(range.startContainer, range.startOffset);
+            const cursorOffset = preCaretRange.toString().length;
 
+            // Update warna dengan Prism
             editor.innerHTML = Prism.highlight(code, Prism.languages.javascript, 'javascript');
+
+            // Kembalikan posisi kursor
             restoreCursor(editor, cursorOffset);
             
+            // Update Line Numbers
             const lines = code.split('\n').length;
             lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+            
             saveData();
         }
 
@@ -227,6 +260,7 @@
             range.collapse(true);
             const nodeStack = [container];
             let node, foundStart = false;
+
             while (!foundStart && (node = nodeStack.pop())) {
                 if (node.nodeType === 3) {
                     const nextCharCount = charCount + node.length;
@@ -238,7 +272,9 @@
                     charCount = nextCharCount;
                 } else {
                     let i = node.childNodes.length;
-                    while (i--) nodeStack.push(node.childNodes[i]);
+                    while (i--) {
+                        nodeStack.push(node.childNodes[i]);
+                    }
                 }
             }
             const sel = window.getSelection();
@@ -246,81 +282,29 @@
             sel.addRange(range);
         }
 
+        // Event Listeners
         editor.addEventListener('input', highlight);
+        
         editor.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
                 e.preventDefault();
                 document.execCommand('insertText', false, '    ');
             }
+            if (e.key === 'Enter') {
+                // Auto indent sederhana bisa ditambahkan di sini jika perlu
+            }
         });
 
-        async function deployWorker() {
-            const email = document.getElementById('email').value;
-            const key = document.getElementById('apiKey').value;
-            const acc = document.getElementById('accountId').value;
-            const name = document.getElementById('workerName').value;
-            const proxy = document.getElementById('proxyUrl').value;
-            const btn = document.getElementById('btnText');
-
-            if(!email || !key || !acc || !name) return showStatus("Lengkapi data!", "bg-yellow-500/20 text-yellow-500");
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="animate-spin">🌀</span> DEPLOYING...`;
-
-            // Cloudflare API URL
-            const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${acc}/workers/scripts/${name}`;
-            
-            // Menggunakan Proxy jika URL proxy diisi
-            const finalUrl = proxy ? proxy + apiUrl : apiUrl;
-
-            try {
-                const res = await fetch(finalUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'X-Auth-Email': email,
-                        'X-Auth-Key': key,
-                        'Content-Type': 'application/javascript',
-                        // Jika menggunakan cors-anywhere, header ini sering diperlukan
-                        'X-Requested-With': 'XMLHttpRequest' 
-                    },
-                    body: editor.innerText
-                });
-
-                if (res.status === 403 && proxy.includes("cors-anywhere")) {
-                    showStatus("Butuh Akses Proxy! Klik tombol 'Request access' di website cors-anywhere.herokuapp.com dulu.", "bg-orange-500/20 text-orange-500");
-                    window.open("https://cors-anywhere.herokuapp.com/corsdemo", "_blank");
-                    return;
-                }
-
-                const data = await res.json();
-                if(data.success) showStatus("Berhasil Deploy!", "bg-green-500/20 text-green-500");
-                else showStatus("Error: " + (data.errors?.[0]?.message || "Gagal"), "bg-red-500/20 text-red-500");
-            } catch (e) {
-                showStatus("Error: Proxy mungkin bermasalah atau butuh aktivasi.", "bg-red-500/20 text-red-500");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="rocket" class="w-5 h-5"></i> DEPLOY NOW!`;
-                lucide.createIcons();
-            }
-        }
-
-        // --- Standard Functions ---
-        function showStatus(msg, cls) {
-            const b = document.getElementById('statusBox');
-            b.className = "mt-3 p-3 rounded-lg text-[10px] font-mono " + cls;
-            b.innerText = msg;
-            b.classList.remove('hidden');
-        }
-
+        // --- AUTH & PERSISTENCE ---
         function saveData() {
-            localStorage.setItem('shiroko_v2_data', JSON.stringify({
+            const data = {
                 email: document.getElementById('email').value,
                 apiKey: document.getElementById('apiKey').value,
                 accountId: document.getElementById('accountId').value,
                 workerName: document.getElementById('workerName').value,
-                proxy: document.getElementById('proxyUrl').value,
                 code: editor.innerText
-            }));
+            };
+            localStorage.setItem('shiroko_v2_data', JSON.stringify(data));
         }
 
         window.onload = () => {
@@ -329,26 +313,68 @@
             if(saved.apiKey) document.getElementById('apiKey').value = saved.apiKey;
             if(saved.accountId) document.getElementById('accountId').value = saved.accountId;
             if(saved.workerName) document.getElementById('workerName').value = saved.workerName;
-            if(saved.proxy) document.getElementById('proxyUrl').value = saved.proxy;
-            editor.innerText = saved.code || "export default {\n  async fetch(request, env) {\n    return new Response('Halo Senpai! >w<');\n  }\n};";
+            
+            editor.innerText = saved.code || initialCode;
             highlight();
+
             if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
             loadTemplateList();
         };
 
+        // --- API FUNCTIONS ---
+        async function deployWorker() {
+            const email = document.getElementById('email').value;
+            const key = document.getElementById('apiKey').value;
+            const acc = document.getElementById('accountId').value;
+            const name = document.getElementById('workerName').value;
+            const btn = document.getElementById('btnText');
+
+            if(!email || !key || !acc || !name) return showStatus("Data tidak lengkap!", "bg-yellow-500/20 text-yellow-500");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">🌀</span> DEPLOYING...`;
+
+            try {
+                const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc}/workers/scripts/${name}`, {
+                    method: 'PUT',
+                    headers: { 'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/javascript' },
+                    body: editor.innerText
+                });
+                const data = await res.json();
+                if(data.success) showStatus("Berhasil Deploy!", "bg-green-500/20 text-green-500");
+                else showStatus("Error: " + data.errors[0].message, "bg-red-500/20 text-red-500");
+            } catch (e) {
+                showStatus("Gagal (CORS/Network)", "bg-red-500/20 text-red-500");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="rocket" class="w-5 h-5"></i> DEPLOY NOW!`;
+                lucide.createIcons();
+            }
+        }
+
+        function showStatus(msg, cls) {
+            const b = document.getElementById('statusBox');
+            b.className = "mt-3 p-3 rounded-lg text-[10px] font-mono " + cls;
+            b.innerText = msg;
+            b.classList.remove('hidden');
+        }
+
+        // --- UTILS ---
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+        
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             document.getElementById('themeIcon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            document.getElementById('themeText').innerText = isDark ? 'Mode Terang' : 'Mode Gelap';
             lucide.createIcons();
         }
 
         async function loadTemplateList() {
+            const s = document.getElementById('templateSelect');
             try {
                 const res = await fetch('template/list.json');
                 const files = await res.json();
-                const s = document.getElementById('templateSelect');
                 s.innerHTML = '<option value="">-- Pilih Script --</option>';
                 files.forEach(f => {
                     const o = document.createElement('option');
@@ -374,6 +400,7 @@
             r.onload = (e) => {
                 editor.innerText = e.target.result;
                 highlight();
+                document.getElementById('fileNameDisplay').innerText = f.name;
             };
             r.readAsText(f);
         }
